@@ -1,0 +1,10 @@
+ * Is it possible to make the generalisation of component types at the level of the component pools?
+    
+
+ * We could potentially use components that store function pointers to pre defined functions.
+   - Although I think this is a hybrid ECS since the component is now technically storing a behaviour?
+   - The system could then call these functions (we would need a consistent interface for the function types) and use their results
+
+ * If this is the way we are going to do it, couldn't we also just make the components using OOP, but reference them using pointers in the pools
+   - This keeps the memory cachable doesn't it?
+
