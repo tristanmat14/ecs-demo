@@ -6,7 +6,8 @@
 
 void movementSystem(
     ComponentPool<PositionComponent>& positionPool,
-    ComponentPool<VelocityComponent>& velocityPool
+    ComponentPool<VelocityComponent>& velocityPool,
+    float deltaTime
 ) {
     for (std::size_t i = 0; i < velocityPool.getSize(); ++i) {
         Entity e = velocityPool.entities[i];
@@ -16,7 +17,7 @@ void movementSystem(
         auto& position = positionPool.get(e);
         auto& velocity = velocityPool.data[i];
 
-        position.x += velocity.x;
-        position.y += velocity.y;
+        position.x += velocity.x * deltaTime;
+        position.y += velocity.y * deltaTime;
     }
 }

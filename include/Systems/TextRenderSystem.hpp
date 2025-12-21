@@ -24,4 +24,6 @@ void textRenderSystem(
 
         std::cout << '\n';
     }
+
+    std::cout << '\n';
 }

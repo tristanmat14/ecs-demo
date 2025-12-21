@@ -3,10 +3,10 @@
 #include <iostream>
 
 struct LifetimeComponent {
-    int frames_left;
+    float seconds_left;
 };
 
 std::ostream& operator<<(std::ostream& os, const LifetimeComponent c) {
-    os << c.frames_left;
+    os << c.seconds_left;
     return os;
 }
