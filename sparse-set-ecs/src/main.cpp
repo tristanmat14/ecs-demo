@@ -22,8 +22,6 @@ int main(int argc, char* argv[]) {
     Clock displayClock; 
     auto& ecm = EntityComponentManager::getInstance();
 
-    ComponentPool<PositionComponent> test;
-
     // static dot
     auto newEntity = ecm.createEntity();
     ecm.positionPool.add(newEntity, PositionComponent{5.0f, 5.0f});
