@@ -10,6 +10,7 @@
 #include "TextRenderComponent.hpp"
 #include "VelocityComponent.hpp"
 #include "LifetimeComponent.hpp"
+#include "BoundedCollisionComponent.hpp"
 
 class EntityComponentManager {
 public:
@@ -74,5 +75,6 @@ public:
     ComponentPool<VelocityComponent> velocityPool;
     ComponentPool<TextRenderComponent> textRenderPool;
     ComponentPool<LifetimeComponent> lifetimePool;
+    ComponentPool<BoundedCollisionComponent> boundedCollisionPool;
 };
 

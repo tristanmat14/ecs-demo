@@ -9,12 +9,13 @@
 #include "TextGridRenderSystem.hpp"
 #include "TextRenderSystem.hpp"
 #include "LifetimeSystem.hpp"
+#include "BoundedCollisionSystem.hpp"
 #include "DebugSystem.hpp"
 
 #include "Clock.hpp"
 #include "Utilities.hpp"
 
-static constexpr float SECONDS_PER_FRAME = 0.1f;
+static constexpr float SECONDS_PER_FRAME = 0.05f;
 
 int main(int argc, char* argv[]) {
     Clock frameClock;
@@ -26,7 +27,7 @@ int main(int argc, char* argv[]) {
     // static dot
     auto newEntity = ecm.createEntity();
     ecm.positionPool.add(newEntity, PositionComponent{5.0f, 5.0f});
-    ecm.textRenderPool.add(newEntity, TextRenderComponent{'o'});
+    ecm.textRenderPool.add(newEntity, TextRenderComponent{'s'});
     ecm.lifetimePool.add(newEntity, LifetimeComponent{4.0f});
 
     // moving dot
@@ -34,6 +35,7 @@ int main(int argc, char* argv[]) {
     ecm.positionPool.add(newEntity, PositionComponent{0.0f, 0.0f});
     ecm.velocityPool.add(newEntity, VelocityComponent{0.0f, 1.0f});
     ecm.textRenderPool.add(newEntity, TextRenderComponent{'o'});
+    ecm.boundedCollisionPool.add(newEntity, BoundedCollisionComponent{-3.0f, -2.0f, -5.0f, 5.0f});
 
     // slow moving dot
     newEntity = ecm.createEntity();
@@ -44,8 +46,9 @@ int main(int argc, char* argv[]) {
     // fast moving dot
     newEntity = ecm.createEntity();
     ecm.positionPool.add(newEntity, PositionComponent{6.0f, 7.0f});
-    ecm.velocityPool.add(newEntity, VelocityComponent{-1.0f, -2.0f});
+    ecm.velocityPool.add(newEntity, VelocityComponent{-2.0f, -3.0f});
     ecm.textRenderPool.add(newEntity, TextRenderComponent{'o'});
+    ecm.boundedCollisionPool.add(newEntity, BoundedCollisionComponent{-10.0f, 10.0f, -10.0f, 10.0f});
 
     // invisible mover
     newEntity = ecm.createEntity();
@@ -69,6 +72,7 @@ int main(int argc, char* argv[]) {
         // run systems
         lifetimeSystem(ecm.lifetimePool, ecm.entityRemover, frameClock.getDeltaTime());
         movementSystem(ecm.positionPool, ecm.velocityPool, frameClock.getDeltaTime());
+        boundedCollisionSystem(ecm.boundedCollisionPool, ecm.positionPool, ecm.velocityPool);
 
         if (displayClock.getCurrentTime() >= SECONDS_PER_FRAME) {
             displayClock.reset(); 
