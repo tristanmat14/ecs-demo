@@ -5,7 +5,7 @@ DEMO ?= sparse-set-ecs
 BUILD_DIR := build
 SRC_DIR := $(DEMO)/src
 
-INCLUDE_DIRS := $(DEMO)/include $(filter %/, $(wildcard $(DEMO)/include/*/))
+INCLUDE_DIRS := $(DEMO)/include $(filter %/, $(wildcard $(DEMO)/include/*/)) $(DEMO)/include/Components/Definitions
 CXXFLAGS += $(addprefix -I, $(INCLUDE_DIRS))
 
 TARGET := $(BUILD_DIR)/main

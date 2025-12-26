@@ -2,6 +2,7 @@
 
 #include "ComponentPool.hpp"
 #include "LifetimeComponent.hpp"
+#include "EntityComponentManager.hpp"
 
 void lifetimeSystem(
     ComponentPool<LifetimeComponent>& lifetimePool,

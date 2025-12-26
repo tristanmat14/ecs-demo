@@ -1,16 +1,16 @@
 #pragma once
-#include <cstdint>
-#include <vector>
-#include <unordered_map>
-#include <queue>
 
-#include "Entity.hpp"
+#include <vector>
+#include <queue>
+#include <unordered_map>
+#include <memory>
+
+#include "IComponent.hpp"
+#include "IComponentPool.hpp"
 #include "ComponentPool.hpp"
-#include "PositionComponent.hpp"
-#include "TextRenderComponent.hpp"
-#include "VelocityComponent.hpp"
-#include "LifetimeComponent.hpp"
-#include "BoundedCollisionComponent.hpp"
+#include "Entity.hpp"
+
+constexpr std::size_t DEFAULT_CAPACITY = 20;
 
 class EntityComponentManager {
 public:
@@ -25,25 +25,28 @@ public:
         }
     };
 
+    /*
+    class EntityCreator {
+    private:
+        std::queue<Entity> createQueue;
+        EntityCreator() = default;
+        friend class EntityComponentManager;
+    public:
+        // takes a list of components
+        // make sure the lists are copied so we fully own them
+        void add() {
+            // adds entity with the components
+        }
+    };
+    */
+
+public:
+    EntityRemover entityRemover;
+
 private:
-    EntityComponentManager() : entityRemover{} {};
-    
-    EntityComponentManager(const EntityComponentManager&) = delete;
-    EntityComponentManager& operator=(const EntityComponentManager&) = delete;
-    EntityComponentManager(EntityComponentManager&&) = delete;
-    EntityComponentManager& operator=(EntityComponentManager&&) = delete;
-    
-    uint32_t nextId = 0;
-
+    EntityID nextId = 0;
     std::vector<Entity> entities;
-
-    void deleteEntity(Entity e) {
-        positionPool.remove(e);
-        velocityPool.remove(e);
-        textRenderPool.remove(e);
-        lifetimePool.remove(e);
-        std::erase(entities, e);
-    }
+    std::unordered_map<ComponentID, std::unique_ptr<IComponentPool>> componentPools;
 
 public:
     static EntityComponentManager& getInstance() {
@@ -51,10 +54,21 @@ public:
         return instance;
     }
     
+    // ---------------------------------------------------
+    // Entity Management
+    // ---------------------------------------------------
     Entity createEntity() {
-        auto e = Entity{nextId++};
-        entities.push_back(e);
-        return e;
+        auto entity = Entity{nextId++};
+        entities.push_back(entity);
+        return entity;
+    }
+
+    void deleteEntity(Entity e) {
+        auto it = std::find(entities.begin(), entities.end(), e);
+        if (it != entities.end()) {
+            *it = std::move(entities.back());
+            entities.pop_back();
+        }
     }
 
     void deleteEntities() {
@@ -65,16 +79,41 @@ public:
         }
     }
 
-    std::vector<Entity> const& getEntities() {
+    const std::vector<Entity>& getEntities() const {
         return entities;
     }
 
-    EntityRemover entityRemover;
+    // ---------------------------------------------------
+    // Component Management
+    // ---------------------------------------------------
+    template<ComponentConcept Component>
+    void addComponent(Entity e, Component c) {
+        ComponentPool<Component>& pool = this->getPool<Component>();
+        pool.add(e, c);
+    }
 
-    ComponentPool<PositionComponent> positionPool;
-    ComponentPool<VelocityComponent> velocityPool;
-    ComponentPool<TextRenderComponent> textRenderPool;
-    ComponentPool<LifetimeComponent> lifetimePool;
-    ComponentPool<BoundedCollisionComponent> boundedCollisionPool;
+    template<ComponentConcept Component>
+    void removeComponent(Entity e) {
+        ComponentPool<Component>& pool = this->getPool<Component>();
+        pool.remove(e);
+    }
+
+    template<ComponentConcept Component>
+    ComponentPool<Component>& getPool() {
+        auto typeId = Component::typeId();
+
+        if (!componentPools.contains(typeId)) {
+            componentPools[typeId] = std::make_unique<ComponentPool<Component>>(DEFAULT_CAPACITY);
+        }
+
+        return *static_cast<ComponentPool<Component>*>(componentPools[typeId].get());
+    }
+
+private:
+    EntityComponentManager() : entityRemover{} {};
+
+    EntityComponentManager(const EntityComponentManager&) = delete;
+    EntityComponentManager& operator=(const EntityComponentManager&) = delete;
+    EntityComponentManager(EntityComponentManager&&) = delete;
+    EntityComponentManager& operator=(const EntityComponentManager&&) = delete;
 };
-
