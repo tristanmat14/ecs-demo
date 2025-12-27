@@ -1,10 +1,32 @@
 #pragma once
 
 #include <iostream>
+#include <memory>
 
+#include "IProgram.hpp"
+#include "ECSProgram.hpp"
 #include "Clock.hpp"
 
 class Application {
+private:
+    std::unique_ptr<IProgram> program = std::make_unique<ECSProgram>();
+
+    void trackFPS(float dt) {
+        static float frameTimeSum = 0.0f;
+        static int frameCount = 0;
+
+        frameTimeSum += dt;
+        frameCount++;
+
+        if (frameCount >= 100) {
+            float frameTimeAvg = frameTimeSum / frameCount;
+            frameTimeSum = 0.0f;
+            frameCount = 0;
+            float FPS = 1.0f / frameTimeAvg;
+            std::cout << "FPS: " << FPS << '\n';
+        }
+    }
+
 protected:
     Clock frameClock;
     bool running = true;
@@ -36,6 +58,11 @@ protected:
     virtual void onPostFrame() {}
 
     /**
+     * TEMPORARY - REMOVE
+     */
+    virtual void onRender() {}
+
+    /**
      * Core application logic.
      * OS-independent code should be defined in this class.
      */
@@ -59,29 +86,24 @@ public:
     }
     
     /**
-     * The Main loop - calls pre/post frame hooks and runs core logic.
+     * The Main loop - calls pre/post frame hooks and runs core program logic.
      */
     void run() {
-        float frameTimeSum = 0;
-        int frameCount = 0;
+        program->start();
 
         while (running && onPreFrame()) {
             frameClock.updateLap();
-            frameTimeSum += frameClock.getDeltaTime();
-            frameCount++;
+            float dt = frameClock.getDeltaTime();
+          
+            trackFPS(dt);
 
-            // FPS tracker
-            if (frameCount >= 50) {
-                float frameTimeAvg = frameTimeSum / frameCount;
-                frameTimeSum = 0.0f;
-                frameCount = 0;
-                float FPS = 1.0f / frameTimeAvg;
-                std::cout << "FPS: " << FPS << '\n';
-            }
-           
-            runFrame();
+            program->update(dt);
+
+            onRender();
 
             onPostFrame();
         }
+
+        program->end();
     }
 };
