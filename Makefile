@@ -1,5 +1,7 @@
-CXX := g++
+CXX := x86_64-w64-mingw32-g++
 CXXFLAGS := -std=c++20
+
+LINKFLAGS := -lgdi32
 
 DEMO ?= sparse-set-ecs
 BUILD_DIR := build
@@ -12,7 +14,7 @@ TARGET := $(BUILD_DIR)/main
 SRC := $(wildcard $(SRC_DIR)/*.cpp)
 
 $(TARGET): $(SRC) | $(BUILD_DIR)
-	$(CXX) $(CXXFLAGS) $(SRC) -o $(TARGET)
+	$(CXX) $(CXXFLAGS) $(SRC) -O3 $(LINKFLAGS) -o $(TARGET)
 
 $(BUILD_DIR):
 	mkdir -p $(BUILD_DIR)

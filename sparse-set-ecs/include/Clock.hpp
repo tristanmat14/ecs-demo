@@ -12,14 +12,14 @@ private:
     float currentTime = 0.0f;
 
 public:
-    /**
-     * @Note: Should be called before entering a frame loop to clear any delta time
-     *        accumulation from outside the frame loop
-     */
     void update() {
         std::chrono::duration<float> elapsed = clock::now() - initialisationTime;
-        previousTime = currentTime;
         currentTime = elapsed.count();
+    }
+    
+    void updateLap() {
+        previousTime = currentTime;
+        update();
     }
 
     void reset() {

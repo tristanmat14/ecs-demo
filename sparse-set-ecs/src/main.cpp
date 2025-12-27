@@ -1,14 +1,12 @@
-#include "Application.hpp"
+#include "WinApplication.hpp"
 
 int main(int argc, char* argv[]) {
-    Application app; 
+    WinApplication app; 
 
-    app.start();
-
-    for (int i = 0; i < 1000; ++i) {
-        app.runFrame();
+    if (app.start()) {
+        app.run();
     }
-
+    
     app.end();
 
     return 0;
