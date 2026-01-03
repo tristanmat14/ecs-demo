@@ -5,7 +5,7 @@
 #include "IComponent.hpp"
 #include "ComponentID.hpp"
 
-struct LifetimeComponent : public IComponent<LifetimeComponent> {
+struct LifetimeComponent final : public IComponent<LifetimeComponent> {
     static ComponentID typeId() {
         return ComponentID::Lifetime;
     }

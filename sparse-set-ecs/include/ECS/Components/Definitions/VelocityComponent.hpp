@@ -5,7 +5,7 @@
 #include "IComponent.hpp"
 #include "ComponentID.hpp"
 
-struct VelocityComponent : IComponent<VelocityComponent> {
+struct VelocityComponent final : IComponent<VelocityComponent> {
     static ComponentID typeId() {
         return ComponentID::Velocity;
     }

@@ -64,6 +64,10 @@ public:
     }
 
     void deleteEntity(Entity e) {
+        for (auto& [_, componentPool] : componentPools) {
+            componentPool->remove(e);
+        }
+        
         auto it = std::find(entities.begin(), entities.end(), e);
         if (it != entities.end()) {
             *it = std::move(entities.back());

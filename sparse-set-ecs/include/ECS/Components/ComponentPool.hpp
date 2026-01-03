@@ -22,7 +22,7 @@
  * If an entity has a component, then it is in the corresponding component pool.
  */
 template<ComponentConcept Component>
-struct ComponentPool : public IComponentPool {
+struct ComponentPool final : public IComponentPool {
     std::vector<Component> data;
     std::vector<Entity> entities;
     std::unordered_map<Entity, std::size_t> lookup;
@@ -63,8 +63,8 @@ struct ComponentPool : public IComponentPool {
         this->entities.push_back(e);
     }
 
-    void remove(Entity e) {
-        auto& it = this->lookup.find(e);
+    void remove(Entity e) override {
+        auto it = this->lookup.find(e);
         if (it == this->lookup.end()) return;
 
         std::size_t entity_index = it->second;
