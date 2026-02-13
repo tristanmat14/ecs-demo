@@ -10,6 +10,7 @@
 #include "Clock.hpp"
 #include "Window.hpp"
 #include "Color.hpp"
+#include "Vector2.hpp"
 
 class Win32Core final : public ICore {
 private:
@@ -21,33 +22,50 @@ private:
         float m_bottom = -1.0f; 
         float m_left = -1.0f; 
         float m_right = 1.0f;
+       
+        float m_cameraAspectRatio = (m_right - m_left) / (m_top - m_bottom);
 
         void addWindow(std::unique_ptr<Window> window) {
             m_window = std::move(window);
         }
-        
-        int convertToPixelX(float x) {
-            assert(m_window != nullptr);
 
+        Vector2 calculateAdjustedWindowSize() {
             float width = m_window->getWidth();
+            float height = m_window->getHeight();
+            float windowAspectRatio = width / height; 
 
-            float gradient = width / (m_right - m_left);
-            float offset = -gradient * m_left;
-            float pixelX = gradient * x + offset;
+            float adjustedWindowWidth = width;
+            float adjustedWindowHeight = height;
 
-            return static_cast<int>(pixelX);
+            if (windowAspectRatio > m_cameraAspectRatio) {
+                // window too wide
+                adjustedWindowWidth = height * m_cameraAspectRatio;
+            } else if (windowAspectRatio < m_cameraAspectRatio) {
+                // window too tall 
+                adjustedWindowHeight = width / m_cameraAspectRatio; 
+            }
+
+            return Vector2{adjustedWindowWidth, adjustedWindowHeight};
         }
 
-        int convertToPixelY(float y) {
+        Vector2 convertToPixelSpace(Vector2 cameraSpace) {
             assert(m_window != nullptr);
 
-            float height = m_window->getHeight();
-            
-            float gradient = -height / (m_top - m_bottom);
-            float offset = -gradient * m_top;
-            float pixelY = gradient * y + offset;
+            Vector2 adjustedWindowSize = calculateAdjustedWindowSize();
 
-            return static_cast<int>(pixelY);
+            float width = m_window->getWidth();
+            float height = m_window->getHeight();
+
+            Vector2 windowOffset = (Vector2{width, height} - adjustedWindowSize) / 2.0f;
+
+            Vector2 gradient = Vector2{
+                adjustedWindowSize.x / (m_right - m_left),
+                -adjustedWindowSize.y / (m_top - m_bottom)
+            };
+            Vector2 offset = -gradient * Vector2(m_left, m_top);
+            Vector2 pixelSpace = Vector2{gradient * cameraSpace + offset};
+
+            return pixelSpace + windowOffset;
         }
 
         friend class Win32Core;
@@ -65,43 +83,70 @@ private:
             m_bottom = bottom;
             m_left = left;
             m_right = right;
+
+            m_cameraAspectRatio = (m_right - m_left) / (m_top - m_bottom);
         }
 
         void clearScreen(Color color) override {
-            assert(m_window != nullptr);
-
-            m_window->clearScreen(color);
-        }
-        
-        void drawCircle(float centerX, float centerY, float radius, Color color) override {
-            assert(m_window != nullptr);
-
-            int pixelCenterX = convertToPixelX(centerX);
-            int pixelCenterY = convertToPixelY(centerY);
-
-            m_window->drawCircle(pixelCenterX, pixelCenterY, radius, color);
+            clearScreen(color, Color{0, 0, 0});
         }
 
-        void drawRectangle(float minX, float maxX, float minY, float maxY, Color color) override {
+        void clearScreen(Color color, Color blankingColor) override {
             assert(m_window != nullptr);
 
-            int pixelMinX = convertToPixelX(minX);
-            int pixelMaxX = convertToPixelX(maxX);
-            int pixelMinY = convertToPixelY(minY);
-            int pixelMaxY = convertToPixelY(maxY);
+            m_window->clearScreen(blankingColor);
 
-            m_window->drawRectangle(pixelMinX, pixelMaxX, pixelMinY, pixelMaxY, color);
+            float height = m_window->getHeight();
+            float width = m_window->getWidth();
+            
+            Vector2 adjustedWindowSize = calculateAdjustedWindowSize();
+
+            float widthOffset = (width - adjustedWindowSize.x) / 2.0f;
+            float heightOffset = (height - adjustedWindowSize.y) / 2.0f;
+
+            m_window->drawRectangle(
+                widthOffset, width - widthOffset,
+                heightOffset, height - heightOffset,
+                color
+            );
+        }
+       
+        void drawCircle(Vector2 center, float radius, Color color) override {
+            assert(m_window != nullptr);
+
+            Vector2 pixelSpace = convertToPixelSpace(center);
+
+            m_window->drawCircle(
+                static_cast<int>(pixelSpace.x),
+                static_cast<int>(pixelSpace.y),
+                radius, color
+            ); 
         }
 
-        void drawLine(float x1, float y1, float x2, float y2, Color color) override {
+        void drawRectangle(Vector2 p1, Vector2 p2, Color color) override {
             assert(m_window != nullptr);
 
-            int pixelX1 = convertToPixelX(x1);
-            int pixelY1 = convertToPixelY(y1);
-            int pixelX2 = convertToPixelX(x2);
-            int pixelY2 = convertToPixelY(y2);
+            std::cout << "INPUT: " << p1.x << "," << p1.y << " - " << p2.x << "," << p2.y << std::endl;
 
-            m_window->drawLine(pixelX1, pixelY1, pixelX2, pixelY2, color);
+            Vector2 pixelP1 = convertToPixelSpace(p1);
+            Vector2 pixelP2 = convertToPixelSpace(p2);
+
+            std::cout << "OUTPUT: " << pixelP1.x << "," << pixelP1.y << " - " << pixelP2.x << "," << pixelP2.y << std::endl;
+
+            m_window->drawRectangle(
+                pixelP1.x, pixelP2.x,
+                pixelP1.y, pixelP2.y, 
+                color
+            );
+        }
+
+        void drawLine(Vector2 p1, Vector2 p2, Color color) override {
+            assert(m_window != nullptr);
+
+            Vector2 pixelP1 = convertToPixelSpace(p1);
+            Vector2 pixelP2 = convertToPixelSpace(p2);
+
+            m_window->drawLine(pixelP1.x, pixelP1.y, pixelP2.x, pixelP2.y, color);
         }
     };
     

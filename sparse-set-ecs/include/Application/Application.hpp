@@ -78,7 +78,7 @@ public:
     void run() {
         while (m_running && m_core->onPreFrame()) {
             m_frameClock.updateLap();
-            float dt = m_frameClock.getDeltaTime();
+            float dt = std::clamp(m_frameClock.getDeltaTime(), 0.0f, 0.1f);
 
             onUpdate(dt);
             onRender();

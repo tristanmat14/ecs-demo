@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Application.hpp"
+#include "Vector2.hpp"
 
 #include "EntityComponentManager.hpp"
 #include "EntityWrapper.hpp"
@@ -55,7 +56,7 @@ public:
     void onRender() override {
         auto& renderer = getRenderer();
 
-        renderer.clearScreen(Color{30, 30, 30});
+        renderer.clearScreen(Color{200, 200, 200}, Color{30, 30, 30});
 
         auto& positionPool = ecm.getPool<PositionComponent>();
         auto& velocityPool = ecm.getPool<VelocityComponent>();
@@ -64,16 +65,14 @@ public:
             Entity e = positionPool.entities[i];
             auto& position = positionPool.data[i];
             
-            renderer.drawCircle(position.x, position.y, 5.0f, Color{0, 100, 250});            
+            renderer.drawCircle(Vector2{position.x, position.y}, 5.0f, Color{0, 100, 250});            
 
             if (velocityPool.has(e)) {
                 auto& velocity = velocityPool.get(e);
                 
                 renderer.drawLine(
-                    position.x,
-                    position.y,
-                    position.x + velocity.x,
-                    position.y + velocity.y,
+                    Vector2{position.x, position.y},
+                    Vector2{position.x + velocity.x, position.y + velocity.y},
                     Color{255, 0, 0}
                 );
             }

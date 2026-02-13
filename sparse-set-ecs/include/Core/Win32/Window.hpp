@@ -260,11 +260,23 @@ public:
      * Draw a rectangle the pixel buffer
      * @note rectangle edges alligned with screen edges
      */
-    void drawRectangle(int minX, int maxX, int minY, int maxY, Color color) {
-        if (maxX <= minX || maxY <= minY) return;
+    void drawRectangle(int x1, int x2, int y1, int y2, Color color) {
+        assert(x1 != x2 && y1 != y2);
 
-        for (int y = minY; y <= maxY; y++) {
-            for (int x = minX; x <= maxX; x++) {
+        if (x2 <= x1) {
+            auto temp = x2;
+            x2 = x1;
+            x1 = temp;
+        }
+        
+        if (y2 <= y1) {
+            auto temp = y2;
+            y2 = y1;
+            y1 = temp;
+        }
+
+        for (int y = y1; y <= y2; y++) {
+            for (int x = x1; x <= x2; x++) {
                 drawPixel(x, y, color);
             }
         }

@@ -59,4 +59,14 @@ struct ComponentPool {
     Component& get(Entity e) {
         return this->data[this->lookup[e]];
     }
+
+    template<typename... Components>
+    Components query() {
+        // return data pools
+    }
 };
+
+template<typename... Components>
+struct QueryView {
+    std::vector<
+}
